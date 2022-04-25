@@ -1,6 +1,5 @@
 type compilerType =(template:HTMLElement|Node,data:object)=>void
 
-
 const mustacheReg = /\{\{(.+?)\}\}/g;
 // const compiler:compilerType =(template,data)=>{
 //   let childNodes = template.childNodes;
@@ -36,3 +35,4 @@ const compiler:compilerType =(template,data)=>{
     }
   })
 }
+export{}

@@ -5,24 +5,30 @@
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>vue源码分析与实现</title>
-  <script src="https://unpkg.com/vue@3"></script>
+  <!-- <script src="https://unpkg.com/vue@3"></script> -->
+  <script src="./src/MyVue.js"></script>
 </head>
 <body>
   <div id="app">
     <span>{{ myName }}</span>
     <span>{{ age }}</span>
+    <span>{{ address.city.name }}</span>
   </div>
   <script>
-    console.log(app);
-    Vue.createApp({
-      data() {
-        return {
-          myName:"cherry",
-          age:18
+  const app = MyVue.createApp({
+     data() {
+       return {
+        myName:"cherry",
+        age:18,
+        address:{
+          city:{
+            name:"重庆"
+          }
         }
-      },
-    }).mount('#app')
-    console.log(app);
+       }
+     },
+   })
+app.mount("#app")
   </script>
 </body>
 </html>
