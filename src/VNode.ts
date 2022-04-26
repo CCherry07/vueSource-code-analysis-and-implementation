@@ -6,10 +6,11 @@
   children:VNode[] | undefined 子元素
   * 
  */
+type VMattrs = Record<string, any>
 interface VNodeOptions{
   tag:string|undefined;
   value:any;
-  VMattrs:Object| undefined;
+  VMattrs:VMattrs| undefined;
   type:number;
   children:VNode[] | undefined
 }
