@@ -63,7 +63,6 @@ function parseVNode(VNode, preventEl) {
                 attr.nodeValue = VNode.VMattrs[key];
                 el_1.attributes.setNamedItem(attr);
                 el_1.nodeValue = VNode.value;
-                console.log(el_1.nodeValue);
             });
         }
         preventEl.appendChild(el_1);
@@ -71,7 +70,6 @@ function parseVNode(VNode, preventEl) {
     }
     else if (VNode.type === 3) {
         var textEl = document.createTextNode(VNode.value);
-        console.log(textEl, preventEl);
         preventEl.appendChild(textEl);
     }
     if (VNode.children) {

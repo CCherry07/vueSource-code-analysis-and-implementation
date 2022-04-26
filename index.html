@@ -22,7 +22,6 @@
     } catch (error) {
       createApp = MyVue.createApp
     }
-    console.log(createApp);
   const app = createApp({
      data() {
        return {
@@ -39,8 +38,7 @@
 app.mount("#app")
 const Vnodes = getVNode(document.querySelector("#app"))
 console.log(Vnodes);
-const real=  parseVNode(Vnodes)
-console.log(real);
+parseVNode(Vnodes)
   </script>
 </body>
 </html>

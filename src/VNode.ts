@@ -1,3 +1,12 @@
+/**
+  tag:string|undefined; 元素的名称
+  value:any;  元素的nodeValue
+  VMattrs:Object| undefined; 元素的属性
+  type:number; 节点的类型
+  children:VNode[] | undefined 子元素
+  * 
+ */
+
 interface VNodeOptions{
   tag:string|undefined;
   value:any;
@@ -19,20 +28,19 @@ class VNode{
     this.type = options.type;
     this.children = options.children || []
   };
-
+  //追加子元素
   appendChild(vNode:VNode){
       this.children.push(vNode)
-    
   }
 }
-
+  // 将real Dom 转化为 VNode
 function getVNode(node:Element|Node){
     let type = node.nodeType  
     let _vnode:InstanceType<typeof VNode> | null = null
     if (type === 1) {
-      // 元素
+      // 元素名称
       let tag = node.nodeName
-      
+      //元素的属性
       let attrsObj = {} as any
       if (node instanceof Element) {
         let attrs = Array.from(node.attributes)
@@ -46,11 +54,13 @@ function getVNode(node:Element|Node){
         VMattrs:attrsObj,
         value:node.nodeValue,
         children:undefined}
+        //创建VNode实例对象
        _vnode = new VNode(options)
-
+        // 添加子节点
        let childNodes = Array.from(node.childNodes);
       childNodes.forEach(node=>{
         if (node && _vnode !== null) {
+          //递归调用getVNode
           _vnode.appendChild(getVNode(node) as VNode )
         }
       })
@@ -66,28 +76,33 @@ function getVNode(node:Element|Node){
     return _vnode
 }
 
-
+//编译VNode
 function parseVNode(VNode:VNode , preventEl:Element = document.body){
+  // 定义真实的element
   let realNode:Element | undefined= undefined
   if (VNode.tag && VNode.type === 1) {
+     // 根据 tag 生成对应的element
     let el = document.createElement(VNode.tag)
+    // 给element 添加 attrs
     if (VNode.VMattrs) {
       let attrsKeys = Object.keys(VNode.VMattrs)
       attrsKeys.forEach(key=>{
         let attr = document.createAttribute(key)
         attr.nodeValue = VNode.VMattrs[key]
         el.attributes.setNamedItem(attr)
+        //给元素赋值的nodeValue
         el.nodeValue = VNode.value
-        console.log(el.nodeValue);
       })
     }
+    // 将创建的元素追加至父元素
     preventEl.appendChild(el)
+    //保存当前创建的元素
     realNode = el    
   }else if(VNode.type === 3){
     let textEl = document.createTextNode(VNode.value)
-    console.log(textEl,preventEl);
     preventEl.appendChild(textEl)
   }
+  //存在children 递归使用parseVNode，并将当前创建的元素作为children的父元素
   if(VNode.children){
     VNode.children.forEach(vnode=>{
       parseVNode(vnode,realNode)
