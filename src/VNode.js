@@ -1,11 +1,3 @@
-/**
-  tag:string|undefined; 元素的名称
-  value:any;  元素的nodeValue
-  VMattrs:Object| undefined; 元素的属性
-  type:number; 节点的类型
-  children:VNode[] | undefined 子元素
-  *
- */
 var VNode = /** @class */ (function () {
     function VNode(options) {
         this.tag = options.tag || undefined;
@@ -77,9 +69,7 @@ function parseVNode(VNode, preventEl) {
         if (VNode.VMattrs) {
             var attrsKeys = Object.keys(VNode.VMattrs);
             attrsKeys.forEach(function (key) {
-                var attr = document.createAttribute(key);
-                attr.nodeValue = VNode.VMattrs[key];
-                el_1.attributes.setNamedItem(attr);
+                el_1.setAttribute(key, VNode.VMattrs[key]);
                 //给元素赋值的nodeValue
                 el_1.nodeValue = VNode.value;
             });
