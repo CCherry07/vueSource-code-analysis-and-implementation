@@ -7,15 +7,23 @@
   <title>vue源码分析与实现</title>
   <!-- <script src="https://unpkg.com/vue@3"></script> -->
   <script src="./src/MyVue.js"></script>
+  <script src="./src/VNode.js"></script>
 </head>
 <body>
   <div id="app">
     <span>{{ myName }}</span>
-    <span>{{ age }}</span>
+    <span class="age" style="color: red;">{{ age }}</span>
     <span>{{ address.city.name }}</span>
   </div>
   <script>
-  const app = MyVue.createApp({
+    let createApp = undefined
+    try {
+      createApp = Vue.createApp
+    } catch (error) {
+      createApp = MyVue.createApp
+    }
+    console.log(createApp);
+  const app = createApp({
      data() {
        return {
         myName:"cherry",
@@ -29,6 +37,10 @@
      },
    })
 app.mount("#app")
+const Vnodes = getVNode(document.querySelector("#app"))
+console.log(Vnodes);
+const real=  parseVNode(Vnodes)
+console.log(real);
   </script>
 </body>
 </html>

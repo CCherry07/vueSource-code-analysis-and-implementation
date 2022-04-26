@@ -10,11 +10,11 @@ var MyVue = /** @class */ (function () {
     };
     //渲染函数
     MyVue.prototype.render = function () {
-        MyVue.compiler(this.rootEl, this._data);
+        MyVue.compiler(this.cloneRootEl, this._data);
     };
     MyVue.prototype.updated = function (realElement) {
         var rootElement = this.rootEl;
-        document.body.replaceChild(rootElement, realElement);
+        document.body.replaceChild(realElement, rootElement);
     };
     MyVue.prototype.mount = function (selector) {
         var root = undefined;

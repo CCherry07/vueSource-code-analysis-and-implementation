@@ -19,7 +19,7 @@ class MyVue{
   }
   //渲染函数
   render() {
-    MyVue.compiler(this.rootEl , this._data)
+    MyVue.compiler(this.cloneRootEl , this._data)
   }
    static compiler:compilerType = (template:Element|Node,data) =>{
       let nodes = Array.from(template.childNodes);
@@ -48,7 +48,7 @@ class MyVue{
     }
   updated(realElement:Node) { 
      const rootElement = this.rootEl 
-    document.body.replaceChild(rootElement,realElement)
+    document.body.replaceChild(realElement,rootElement)
   }
   mount(selector:string){
     let root = undefined
