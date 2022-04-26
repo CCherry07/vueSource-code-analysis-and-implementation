@@ -58,38 +58,31 @@ function getVNode(node) {
     return _vnode;
 }
 //编译VNode
-function parseVNode(VNode, preventEl) {
-    if (preventEl === void 0) { preventEl = document.body; }
+function parseVNode(VNode) {
     // 定义真实的element
-    var realNode = undefined;
+    var realNode = null;
     if (VNode.tag && VNode.type === 1) {
         // 根据 tag 生成对应的element
-        var el_1 = document.createElement(VNode.tag);
+        realNode = document.createElement(VNode.tag);
         // 给element 添加 attrs
         if (VNode.VMattrs) {
-            var attrsKeys = Object.keys(VNode.VMattrs);
-            attrsKeys.forEach(function (key) {
-                el_1.setAttribute(key, VNode.VMattrs[key]);
+            Object.keys(VNode.VMattrs).forEach(function (key) {
+                // attr.nodeValue = VNode.VMattrs[key]
+                if (realNode instanceof Element)
+                    realNode.setAttribute(key, VNode.VMattrs[key]);
                 //给元素赋值的nodeValue
-                el_1.nodeValue = VNode.value;
+                realNode.nodeValue = VNode.value;
             });
         }
-        // 将创建的元素追加至父元素
-        preventEl.appendChild(el_1);
-        //保存当前创建的元素
-        realNode = el_1;
     }
     else if (VNode.type === 3) {
-        var textEl = document.createTextNode(VNode.value);
-        preventEl.appendChild(textEl);
+        return document.createTextNode(VNode.value);
     }
     //存在children 递归使用parseVNode，并将当前创建的元素作为children的父元素
-    if (VNode.children) {
+    if (VNode.children.length > 0) {
         VNode.children.forEach(function (vnode) {
-            parseVNode(vnode, realNode);
+            realNode.appendChild(parseVNode(vnode));
         });
     }
-    else {
-        return preventEl;
-    }
+    return realNode;
 }

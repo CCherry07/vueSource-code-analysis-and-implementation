@@ -76,35 +76,30 @@ function getVNode(node:Element|Node){
 }
 
 //编译VNode
-function parseVNode(VNode:VNode , preventEl:Element = document.body){
+function parseVNode(VNode:VNode){
   // 定义真实的element
-  let realNode:Element | undefined= undefined
+  let realNode:Element | Text| null = null
   if (VNode.tag && VNode.type === 1) {
      // 根据 tag 生成对应的element
-    let el = document.createElement(VNode.tag)
+    realNode = document.createElement(VNode.tag)
     // 给element 添加 attrs
     if (VNode.VMattrs) {
-      let attrsKeys = Object.keys(VNode.VMattrs)
-      attrsKeys.forEach(key=>{
-        el.setAttribute(key, VNode.VMattrs[key])
-        //给元素赋值的nodeValue
-        el.nodeValue = VNode.value
+      Object.keys(VNode.VMattrs).forEach(key=>{
+        // attr.nodeValue = VNode.VMattrs[key]
+        if ( realNode instanceof Element ) 
+          realNode.setAttribute(key, VNode.VMattrs[key]);
+          //给元素赋值的nodeValue
+          realNode.nodeValue = VNode.value
       })
     }
-    // 将创建的元素追加至父元素
-    preventEl.appendChild(el)
-    //保存当前创建的元素
-    realNode = el    
   }else if(VNode.type === 3){
-    let textEl = document.createTextNode(VNode.value)
-    preventEl.appendChild(textEl)
+   return document.createTextNode(VNode.value)
   }
   //存在children 递归使用parseVNode，并将当前创建的元素作为children的父元素
-  if(VNode.children){
+  if(VNode.children.length > 0){
     VNode.children.forEach(vnode=>{
-      parseVNode(vnode,realNode)
+      realNode.appendChild(parseVNode(vnode))
     })
-  }else{
-    return preventEl
   }
+  return realNode
 }
