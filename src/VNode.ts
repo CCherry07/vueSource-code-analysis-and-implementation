@@ -6,7 +6,6 @@
   children:VNode[] | undefined 子元素
   * 
  */
-
 interface VNodeOptions{
   tag:string|undefined;
   value:any;
@@ -57,7 +56,7 @@ function getVNode(node:Element|Node){
         //创建VNode实例对象
        _vnode = new VNode(options)
         // 添加子节点
-       let childNodes = Array.from(node.childNodes);
+        let childNodes = Array.from(node.childNodes);
       childNodes.forEach(node=>{
         if (node && _vnode !== null) {
           //递归调用getVNode
@@ -87,9 +86,7 @@ function parseVNode(VNode:VNode , preventEl:Element = document.body){
     if (VNode.VMattrs) {
       let attrsKeys = Object.keys(VNode.VMattrs)
       attrsKeys.forEach(key=>{
-        let attr = document.createAttribute(key)
-        attr.nodeValue = VNode.VMattrs[key]
-        el.attributes.setNamedItem(attr)
+        el.setAttribute(key, VNode.VMattrs[key])
         //给元素赋值的nodeValue
         el.nodeValue = VNode.value
       })
