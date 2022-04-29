@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>vue源码分析与实现</title>
+  <script src="./MyVue.js"></script>
+</head>
+<body>
+  <div id="app">
+    <span>{{ myName }}</span>
+    <span class="age" style="color: red;">{{ age }}</span>
+    <span>{{ address.city.name }}</span>
+  </div>
+  <script>
+    let createApp = undefined
+    try {
+      createApp = Vue.createApp
+    } catch (error) {
+      createApp = mainVue.createApp
+    }
+  const app = createApp({
+     data() {
+       return {
+        myName:"cherry",
+        age:18,
+        address:{
+          city:{
+            name:"重庆"
+          }
+        }
+       }
+     },
+   })
+  app.mount("#app")
+  console.log(app);
+  </script>
+</body>
+</html>
