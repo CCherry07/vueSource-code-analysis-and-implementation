@@ -109,33 +109,57 @@
 
 interface mainVueOptionsType{
   data:()=>Object,
-  el:Element | Node
+  el:Element | Node,
+  render:()=>void
 }
 
 class mainVue{
   readonly _data:Object
   readonly _el:Element | Node
   template:Element
-  render:()=>any
+  render?:()=>void
   constructor(options:mainVueOptionsType){
     this._data = options.data()
-    // this.render = this.createRenderFunc(this.template)
+    this.render = options.render
   }  
   static createApp(options:mainVueOptionsType){
     return new mainVue(options)
   }
+    // VNode 中的 {{}} 替换成值
+  static compiler:compilerType = (VNodes:InstanceType<typeof VNode>,data:Object) =>{
+      const {value,children} = VNodes;
+      if (MustacheReg.test(value)) {
+        const realValue:any = value.replace(MustacheReg,(_,terget:string)=>{
+          let mapValue = data[terget.trim()]
+            if (terget.includes(".")) {
+              const propsKeys = terget.split(".")
+              mapValue = propsKeys.reduce((preData,nextkey)=>{
+                return preData[nextkey.trim()]
+              },data)
+            }
+          return mapValue
+        })
+        VNodes.value = realValue
+      }
+      if (children.length > 0) {
+          children.forEach(vnode=>{
+            mainVue.compiler(vnode,data)
+          })
+        }
+    }
   mount(selector:string){
     const el = document.querySelector(selector)
     this.template = el
     this.render = this.createRenderFunc(this.template)
-    this.mountComponent(el)
+    this.mountComponent()
   }
-  mountComponent(el:Element){
+  mountComponent(){
     let mount = function(){
       this.update(this.render())
     }
     mount.call(this)
   }
+  //新旧vnode diff算法
   update(realDom){
     //parseVNode vnode -> realDom
     this.template.parentElement.replaceChild(realDom,this.template)
@@ -148,28 +172,6 @@ class mainVue{
       const realDom = parseVNode(VNodes)
       return realDom
     }
-  }
-  // VNode 中的 {{}} 替换成值
-  static compiler:compilerType = (VNodes:InstanceType<typeof VNode>,data:Object) =>{
-    const {value,children} = VNodes;
-    if (MustacheReg.test(value)) {
-      const realValue:any = value.replace(MustacheReg,(_,terget:string)=>{
-        let mapValue = data[terget.trim()]
-          if (terget.includes(".")) {
-            const propsKeys = terget.split(".")
-            mapValue = propsKeys.reduce((preData,nextkey)=>{
-              return preData[nextkey.trim()]
-            },data)
-          }
-        return mapValue
-      })
-      VNodes.value = realValue
-    }
-    if (children.length > 0) {
-        children.forEach(vnode=>{
-          mainVue.compiler(vnode,data)
-        })
-      }
   }
 }
 
