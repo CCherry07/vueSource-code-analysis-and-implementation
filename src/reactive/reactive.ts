@@ -76,7 +76,7 @@ deepDefineReactive(deepO)
 console.log(deepO.address.city[1] = "北京");
 console.log(deepO.address.city);
 console.log(deepO);
-
+  
 console.log(deepO.age);
 
 
