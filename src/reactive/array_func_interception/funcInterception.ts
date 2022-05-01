@@ -33,19 +33,39 @@ let  ARRAY_METHOD = [
 //使用原型继承 ，修改型链的结构
 
 let testArr:any[] = [ 1,2,3,4,5 ]
-let interceptArrayProto = Object.create( Array.prototype )
-ARRAY_METHOD.forEach(method=>{
-  //拦截函数
-  interceptArrayProto[method] = function(){
-    console.log(method);
-    return Array.prototype[method].apply(this,arguments)
-  }
-})
+// let interceptArrayProto = Object.create( Array.prototype )
+// ARRAY_METHOD.forEach(method=>{
+//   //拦截函数
+//   interceptArrayProto[method] = function(){
+//     console.log(method);
+//     return Array.prototype[method].apply(this,arguments)
+//   }
+// })
 
-try {
-  testArr.__proto__ = interceptArrayProto
-} catch (error) {
-  Object.keys( interceptArrayProto ).forEach(funcKey=>{
-    testArr[funcKey] = interceptArrayProto[funcKey]
+// try {
+//   testArr.__proto__ = interceptArrayProto
+// } catch (error) {
+//   Object.keys( interceptArrayProto ).forEach(funcKey=>{
+//     testArr[funcKey] = interceptArrayProto[funcKey]
+//   })
+// }
+
+
+function createArrayReactive( target : any[]  ){
+  let interceptArrayProto = Object.create( Array.prototype )
+    ARRAY_METHOD.forEach(method=>{
+    //拦截函数
+      interceptArrayProto[method] = function(){
+      return Array.prototype[method].apply(this,arguments)
+    }
   })
+  try {
+    target.__proto__ = interceptArrayProto
+  } catch (error) {
+    Object.keys( interceptArrayProto ).forEach(funcKey=>{
+      target[funcKey] = interceptArrayProto[funcKey]
+    })
+  }
 }
+
+createArrayReactive(testArr)

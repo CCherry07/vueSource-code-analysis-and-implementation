@@ -24,19 +24,36 @@ var ARRAY_METHOD = [
 ];
 //使用原型继承 ，修改型链的结构
 var testArr = [1, 2, 3, 4, 5];
-var interceptArrayProto = Object.create(Array.prototype);
-ARRAY_METHOD.forEach(function (method) {
-    //拦截函数
-    interceptArrayProto[method] = function () {
-        console.log(method);
-        return Array.prototype[method].apply(this, arguments);
-    };
-});
-try {
-    testArr.__proto__ = interceptArrayProto;
-}
-catch (error) {
-    Object.keys(interceptArrayProto).forEach(function (funcKey) {
-        testArr[funcKey] = interceptArrayProto[funcKey];
+// let interceptArrayProto = Object.create( Array.prototype )
+// ARRAY_METHOD.forEach(method=>{
+//   //拦截函数
+//   interceptArrayProto[method] = function(){
+//     console.log(method);
+//     return Array.prototype[method].apply(this,arguments)
+//   }
+// })
+// try {
+//   testArr.__proto__ = interceptArrayProto
+// } catch (error) {
+//   Object.keys( interceptArrayProto ).forEach(funcKey=>{
+//     testArr[funcKey] = interceptArrayProto[funcKey]
+//   })
+// }
+function createArrayReactive(target) {
+    var interceptArrayProto = Object.create(Array.prototype);
+    ARRAY_METHOD.forEach(function (method) {
+        //拦截函数
+        interceptArrayProto[method] = function () {
+            return Array.prototype[method].apply(this, arguments);
+        };
     });
+    try {
+        target.__proto__ = interceptArrayProto;
+    }
+    catch (error) {
+        Object.keys(interceptArrayProto).forEach(function (funcKey) {
+            target[funcKey] = interceptArrayProto[funcKey];
+        });
+    }
 }
+createArrayReactive(testArr);

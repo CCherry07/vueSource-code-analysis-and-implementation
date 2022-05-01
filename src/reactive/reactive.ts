@@ -31,6 +31,9 @@ function defineReactive(target , key , value , enumerable){
     set( newValue ){
       console.log(`${value} 被重新赋值为 ${ newValue }`);
       value = newValue
+      if (value instanceof Object) {
+        deepDefineReactive(value)
+      }
     }
   })
 }
@@ -52,11 +55,42 @@ let deepO = {
     email:"cherry.com"
   }
 }
+let  ARRAY_METHOD = [
+  "push",
+  "pop",
+  "shift",
+  "unshift",
+  "reverse",
+  "sort",
+  "splice"
+]
+
+function createArrayReactive( target : any[] ){
+  let interceptArrayProto = Object.create( Array.prototype )
+    ARRAY_METHOD.forEach(method=>{
+      //拦截函数
+      interceptArrayProto[method] = function(){
+      let res =  Array.prototype[method].apply(this,arguments)
+      //数组方法执行完后，对数组响应化
+      deepDefineReactive(target)
+      return res
+    }
+  })
+  try {
+    target.__proto__ = interceptArrayProto
+  } catch (error) {
+    Object.keys( interceptArrayProto ).forEach(funcKey=>{
+      target[funcKey] = interceptArrayProto[funcKey]
+    })
+  }
+}
+
 
 // 深度DefineReactive
 function deepDefineReactive(deepO){
   Object.keys(deepO).forEach(key=>{
     if (Array.isArray(deepO[key])) {
+      createArrayReactive(deepO[key])
       deepO[key].forEach((value,index)=>{
         if (value instanceof Object) {
           deepDefineReactive(value)
