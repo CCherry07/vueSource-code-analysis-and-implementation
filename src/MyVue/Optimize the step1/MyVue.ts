@@ -215,7 +215,7 @@ function createArrayReactive( target : any[] ){
 function deepDefineReactive(deepO){
   Object.keys(deepO).forEach(key=>{
     if (Array.isArray(deepO[key])) {
-      createArrayReactive(deepO[key])
+      createArrayReactive.call(this,deepO[key])
       deepO[key].forEach((value,index)=>{
         if (value instanceof Object) {
           deepDefineReactive(value)
@@ -224,7 +224,7 @@ function deepDefineReactive(deepO){
         }
       })  
     }else if (deepO[key] instanceof Object) {
-      deepDefineReactive(deepO[key])
+      deepDefineReactive.call(this,deepO[key])
     }
     defineReactive.call(this,deepO,key,deepO[key],true)
   })
@@ -243,6 +243,8 @@ function defineReactive(target , key , value , enumerable){
       if (value instanceof Object) {
         deepDefineReactive(value)
       }
+      console.log(this);
+      
       this.mountComponent()
     }
   })

@@ -141,7 +141,6 @@ var mainVue = /** @class */ (function () {
     mainVue.prototype.update = function (newDom) {
         console.log(newDom);
         //parseVNode vnode -> realDom
-        console.log(this.parentElement);
         this.parentElement.replaceChild(newDom, document.querySelector("#app"));
     };
     mainVue.prototype.createRenderFunc = function (el) {
@@ -204,7 +203,7 @@ function deepDefineReactive(deepO) {
     var _this = this;
     Object.keys(deepO).forEach(function (key) {
         if (Array.isArray(deepO[key])) {
-            createArrayReactive(deepO[key]);
+            createArrayReactive.call(_this, deepO[key]);
             deepO[key].forEach(function (value, index) {
                 if (value instanceof Object) {
                     deepDefineReactive(value);
@@ -215,7 +214,7 @@ function deepDefineReactive(deepO) {
             });
         }
         else if (deepO[key] instanceof Object) {
-            deepDefineReactive(deepO[key]);
+            deepDefineReactive.call(_this, deepO[key]);
         }
         defineReactive.call(_this, deepO, key, deepO[key], true);
     });
@@ -234,6 +233,7 @@ function defineReactive(target, key, value, enumerable) {
             if (value instanceof Object) {
                 deepDefineReactive(value);
             }
+            console.log(_this);
             _this.mountComponent();
         }
     });
