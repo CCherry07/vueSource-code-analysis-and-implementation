@@ -20,7 +20,7 @@ let o = {
 
 //使用闭包，将对象中的所有属性defineReactive
 function defineReactive(target , key , value , enumerable){
- 
+
   Object.defineProperty(target , key ,{
     configurable:true,
     enumerable:enumerable,

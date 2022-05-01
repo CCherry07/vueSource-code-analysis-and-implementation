@@ -7,7 +7,16 @@
   * 
  */
   const MustacheReg = /\{\{(.+?)\}\}/g;
-  type compilerType =(VNodes:InstanceType<typeof VNode>,data:Object)=>void
+  let  ARRAY_METHOD = [
+    "push",
+    "pop",
+    "shift",
+    "unshift",
+    "reverse",
+    "sort",
+    "splice"
+  ]
+  type compilerType =(VNodes:InstanceType<typeof VNode>,data:Object)=>VNode
   interface VNodeOptions{
     tag:string|undefined;
     value:any;
@@ -118,18 +127,21 @@ class mainVue{
   readonly _el:Element | Node
   template:Element
   render?:()=>void
+  parentElement:Element
   constructor(options:mainVueOptionsType){
     this._data = options.data()
+    deepDefineReactive.call(this,this._data)
     this.render = options.render
   }  
   static createApp(options:mainVueOptionsType){
     return new mainVue(options)
   }
     // VNode 中的 {{}} 替换成值
-  static compiler:compilerType = (VNodes:InstanceType<typeof VNode>,data:Object) =>{
+  static compiler:compilerType = (VNodes:InstanceType<typeof VNode>,data:Object)=>{
       const {value,children} = VNodes;
+      let options = {...VNodes,children:null}
       if (MustacheReg.test(value)) {
-        const realValue:any = value.replace(MustacheReg,(_,terget:string)=>{
+      const realValue:any = value.replace(MustacheReg,(_,terget:string)=>{
           let mapValue = data[terget.trim()]
             if (terget.includes(".")) {
               const propsKeys = terget.split(".")
@@ -139,17 +151,20 @@ class mainVue{
             }
           return mapValue
         })
-        VNodes.value = realValue
+        options.value = realValue
       }
+      let _vnode = new VNode(options)
       if (children.length > 0) {
           children.forEach(vnode=>{
-            mainVue.compiler(vnode,data)
+            _vnode.appendChild(mainVue.compiler(vnode,data))
           })
-        }
-    }
+      }
+      return _vnode
+  }
   mount(selector:string){
     const el = document.querySelector(selector)
     this.template = el
+    this.parentElement = el.parentElement
     this.render = this.createRenderFunc(this.template)
     this.mountComponent()
   }
@@ -160,19 +175,76 @@ class mainVue{
     mount.call(this)
   }
   //新旧vnode diff算法
-  update(realDom){
+  update(newDom){
+    console.log(newDom);
     //parseVNode vnode -> realDom
-    this.template.parentElement.replaceChild(realDom,this.template)
+   this.parentElement.replaceChild(newDom,document.querySelector("#app"))
   }
   createRenderFunc(el:Element){
     let VNodes = createVNode(el)
     return function(){
-      //将data更新至vNodes
-      mainVue.compiler(VNodes,this._data)
-      const realDom = parseVNode(VNodes)
+      //将data更新至vNodes  
+      const realDom = parseVNode(mainVue.compiler(VNodes,this._data))
       return realDom
     }
   }
 }
 
+function createArrayReactive( target : any[] ){
+  let interceptArrayProto = Object.create( Array.prototype )
+    ARRAY_METHOD.forEach(method=>{
+      //拦截函数
+      interceptArrayProto[method] = function(){
+      let res =  Array.prototype[method].apply(this,arguments)
+      //数组方法执行完后，对数组响应化
+      deepDefineReactive(target)
+      return res
+    }
+  })
+  try {
+    target.__proto__ = interceptArrayProto
+  } catch (error) {
+    Object.keys( interceptArrayProto ).forEach(funcKey=>{
+      target[funcKey] = interceptArrayProto[funcKey]
+    })
+  }
+}
 
+
+// 深度DefineReactive
+function deepDefineReactive(deepO){
+  Object.keys(deepO).forEach(key=>{
+    if (Array.isArray(deepO[key])) {
+      createArrayReactive(deepO[key])
+      deepO[key].forEach((value,index)=>{
+        if (value instanceof Object) {
+          deepDefineReactive(value)
+        }else{
+          defineReactive.call(this, deepO[key],index ,value,true )
+        }
+      })  
+    }else if (deepO[key] instanceof Object) {
+      deepDefineReactive(deepO[key])
+    }
+    defineReactive.call(this,deepO,key,deepO[key],true)
+  })
+}
+
+//使用闭包，将对象中的所有属性defineReactive
+function defineReactive(target , key , value , enumerable){
+  Object.defineProperty(target , key ,{
+    configurable:true,
+    enumerable:enumerable,
+    get(){
+      return value
+    },
+    set:( newValue )=>{
+      value = newValue
+      if (value instanceof Object) {
+        deepDefineReactive(value)
+      }
+      this.mountComponent()
+    }
+  })
+}
+ 
