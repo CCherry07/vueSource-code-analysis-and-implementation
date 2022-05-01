@@ -46,9 +46,10 @@ var deepO = {
         email: "cherry.com"
     }
 };
+// 深度DefineReactive
 function deepDefineReactive(deepO) {
     Object.keys(deepO).forEach(function (key) {
-        if (deepO[key] instanceof Array) {
+        if (Array.isArray(deepO[key])) {
             deepO[key].forEach(function (value, index) {
                 if (value instanceof Object) {
                     deepDefineReactive(value);
@@ -61,11 +62,11 @@ function deepDefineReactive(deepO) {
         else if (deepO[key] instanceof Object) {
             deepDefineReactive(deepO[key]);
         }
-        else {
-            defineReactive(deepO, key, deepO[key], true);
-        }
+        defineReactive(deepO, key, deepO[key], true);
     });
 }
 deepDefineReactive(deepO);
-console.log(deepO.address.city[1]);
+console.log(deepO.address.city[1] = "北京");
+console.log(deepO.address.city);
+console.log(deepO);
 console.log(deepO.age);
