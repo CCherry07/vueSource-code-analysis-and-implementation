@@ -118,7 +118,8 @@ function parseVNode(VNode) {
 var mainVue = /** @class */ (function () {
     function mainVue(options) {
         this._data = options.data();
-        deepDefineReactive.call(this, this._data);
+        this.initData();
+        // deepDefineReactive.call(this,this._data)
         this.render = options.render;
     }
     mainVue.createApp = function (options) {
@@ -139,7 +140,6 @@ var mainVue = /** @class */ (function () {
     };
     //新旧vnode diff算法
     mainVue.prototype.update = function (newDom) {
-        console.log(newDom);
         //parseVNode vnode -> realDom
         this.parentElement.replaceChild(newDom, document.querySelector("#app"));
     };
@@ -151,9 +151,20 @@ var mainVue = /** @class */ (function () {
             return realDom;
         };
     };
+    mainVue.prototype.initData = function () {
+        var _this = this;
+        var keys = Object.keys(this._data);
+        //响应式化
+        observer.call(this, this._data);
+        // this._data.data => this.data 
+        keys.forEach(function (key) {
+            proxy(_this, key, _this._data, true);
+        });
+    };
     // VNode 中的 {{}} 替换成值
     mainVue.compiler = function (VNodes, data) {
         var value = VNodes.value, children = VNodes.children;
+        // children 是一个坑
         var options = __assign(__assign({}, VNodes), { children: null });
         if (MustacheReg.test(value)) {
             var realValue = value.replace(MustacheReg, function (_, terget) {
@@ -178,6 +189,10 @@ var mainVue = /** @class */ (function () {
     };
     return mainVue;
 }());
+function proxy(target, key, _data, enumerable) {
+    //this 不需要绑定
+    defineReactive(target, key, _data[key], enumerable);
+}
 function createArrayReactive(target) {
     var interceptArrayProto = Object.create(Array.prototype);
     ARRAY_METHOD.forEach(function (method) {
@@ -198,6 +213,11 @@ function createArrayReactive(target) {
         });
     }
 }
+function observer(data, vm) {
+    //将data变成响应式
+    deepDefineReactive.call(this, data);
+    // 代理data
+}
 // 深度DefineReactive
 function deepDefineReactive(deepO) {
     var _this = this;
@@ -206,7 +226,7 @@ function deepDefineReactive(deepO) {
             createArrayReactive.call(_this, deepO[key]);
             deepO[key].forEach(function (value, index) {
                 if (value instanceof Object) {
-                    deepDefineReactive(value);
+                    deepDefineReactive.call(_this, value);
                 }
                 else {
                     defineReactive.call(_this, deepO[key], index, value, true);
@@ -216,11 +236,11 @@ function deepDefineReactive(deepO) {
         else if (deepO[key] instanceof Object) {
             deepDefineReactive.call(_this, deepO[key]);
         }
+        //对象也要响应式化
         defineReactive.call(_this, deepO, key, deepO[key], true);
     });
 }
-//使用闭包，将对象中的所有属性defineReactive
-function defineReactive(target, key, value, enumerable) {
+var defineReactive = function (target, key, value, enumerable) {
     var _this = this;
     Object.defineProperty(target, key, {
         configurable: true,
@@ -237,4 +257,4 @@ function defineReactive(target, key, value, enumerable) {
             _this.mountComponent();
         }
     });
-}
+};

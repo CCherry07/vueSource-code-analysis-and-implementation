@@ -11,7 +11,7 @@
   <div id="app">
     <span>{{ myName }}</span>
     <span class="age" style="color: red;">{{ age }}</span>
-    <span>{{ address.city.name }}</span>
+    <span>{{ address.city.firstName }}{{address.city.lastName  }}</span>
   </div>
   <script>
     let createApp = undefined
@@ -25,9 +25,11 @@
        return {
         myName:"cherry",
         age:18,
+        arr:[1,2,3],
         address:{
           city:{
-            name:"重庆"
+            firstName:"重庆",
+            lastName:"渝北"
           }
         }
        }

@@ -130,7 +130,8 @@ class mainVue{
   parentElement:Element
   constructor(options:mainVueOptionsType){
     this._data = options.data()
-    deepDefineReactive.call(this,this._data)
+    this.initData()
+    // deepDefineReactive.call(this,this._data)
     this.render = options.render
   }  
   static createApp(options:mainVueOptionsType){
@@ -139,6 +140,7 @@ class mainVue{
     // VNode 中的 {{}} 替换成值
   static compiler:compilerType = (VNodes:InstanceType<typeof VNode>,data:Object)=>{
       const {value,children} = VNodes;
+      // children 是一个坑
       let options = {...VNodes,children:null}
       if (MustacheReg.test(value)) {
       const realValue:any = value.replace(MustacheReg,(_,terget:string)=>{
@@ -176,7 +178,6 @@ class mainVue{
   }
   //新旧vnode diff算法
   update(newDom){
-    console.log(newDom);
     //parseVNode vnode -> realDom
    this.parentElement.replaceChild(newDom,document.querySelector("#app"))
   }
@@ -188,6 +189,21 @@ class mainVue{
       return realDom
     }
   }
+
+  initData(){
+    let keys = Object.keys(this._data)
+    //响应式化
+    observer.call(this,this._data)
+    // this._data.data => this.data 
+    keys.forEach(key=>{
+      proxy(this,key,this._data,true)
+    })
+  }
+}
+
+function proxy(target,key,_data,enumerable){
+  //this 不需要绑定
+  defineReactive(target,key,_data[key],enumerable)
 }
 
 function createArrayReactive( target : any[] ){
@@ -211,6 +227,16 @@ function createArrayReactive( target : any[] ){
 }
 
 
+function observer( data , vm ){
+  //将data变成响应式
+  deepDefineReactive.call(this,data)
+
+  // 代理data
+
+
+
+}
+
 // 深度DefineReactive
 function deepDefineReactive(deepO){
   Object.keys(deepO).forEach(key=>{
@@ -218,7 +244,7 @@ function deepDefineReactive(deepO){
       createArrayReactive.call(this,deepO[key])
       deepO[key].forEach((value,index)=>{
         if (value instanceof Object) {
-          deepDefineReactive(value)
+          deepDefineReactive.call(this,value)
         }else{
           defineReactive.call(this, deepO[key],index ,value,true )
         }
@@ -226,12 +252,15 @@ function deepDefineReactive(deepO){
     }else if (deepO[key] instanceof Object) {
       deepDefineReactive.call(this,deepO[key])
     }
+    //对象也要响应式化
     defineReactive.call(this,deepO,key,deepO[key],true)
   })
 }
 
 //使用闭包，将对象中的所有属性defineReactive
-function defineReactive(target , key , value , enumerable){
+
+type defineReactiveType = ( target:object , key:string , value:any , enumerable:boolean )=>void
+const defineReactive:defineReactiveType = function (target , key , value , enumerable){
   Object.defineProperty(target , key ,{
     configurable:true,
     enumerable:enumerable,
@@ -244,7 +273,6 @@ function defineReactive(target , key , value , enumerable){
         deepDefineReactive(value)
       }
       console.log(this);
-      
       this.mountComponent()
     }
   })
