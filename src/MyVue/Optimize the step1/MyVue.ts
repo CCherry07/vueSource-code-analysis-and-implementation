@@ -230,15 +230,10 @@ function createArrayReactive( target : any[] ){
 function observer( data , vm ){
   //将data变成响应式
   deepDefineReactive.call(this,data)
-
-  // 代理data
-
-
-
 }
 
 // 深度DefineReactive
-function deepDefineReactive(deepO){
+function deepDefineReactive(deepO){  
   Object.keys(deepO).forEach(key=>{
     if (Array.isArray(deepO[key])) {
       createArrayReactive.call(this,deepO[key])
@@ -277,4 +272,3 @@ const defineReactive:defineReactiveType = function (target , key , value , enume
     }
   })
 }
- 
